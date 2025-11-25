@@ -1,6 +1,6 @@
 # Chatbot de Atendimento Inteligente - 4Blue (Versão IA)
 
-Este projeto é uma evolução do desafio técnico da 4Blue, transformando um chatbot simulado em um Consultor Financeiro Inteligente real. Utilizando a API do Google Gemini 2.5-pro, o sistema implementa uma arquitetura de múltiplos agentes para fornecer diagnósticos financeiros precisos e personalizados para pequenas empresas.
+Este projeto é uma evolução do desafio técnico da 4Blue, transformando um chatbot simulado em um Consultor Financeiro Inteligente real. Utilizando a API do Google Gemini 2.5-flash, o sistema implementa uma arquitetura de múltiplos agentes para fornecer diagnósticos financeiros precisos e personalizados para pequenas empresas.
 
 ## 🧠 Diferenciais da Versão IA
 
