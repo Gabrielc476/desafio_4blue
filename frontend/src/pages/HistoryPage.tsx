@@ -11,33 +11,41 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
-// 1. Componente Wrapper: Responsável apenas por pegar o usuário e passar a 'key'
+// 1. Componente Wrapper
 export function HistoryPage() {
   const { usuarioAtivo } = useAuth();
-  
-  // O segredo está aqui: key={usuarioAtivo}.
-  // Quando o usuário muda, o React "destrói" o componente antigo e cria um novo.
-  // Isso reseta o estado automaticamente e evita o erro de cascade update.
   return <HistoryListContent key={usuarioAtivo} usuarioId={usuarioAtivo} />;
 }
 
-// 2. Componente de Conteúdo: Responsável pela lógica e exibição
+// 2. Componente de Conteúdo
 function HistoryListContent({ usuarioId }: { usuarioId: string }) {
   const [historico, setHistorico] = useState<InteracaoChat[]>([]);
-  
-  // CORREÇÃO: Iniciamos como true. Não precisamos setar no useEffect.
-  const [carregando, setCarregando] = useState(true); 
+  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    // Apenas buscamos os dados. O estado de loading já começou verdadeiro.
     ChatService.obterHistorico(usuarioId)
       .then(setHistorico)
       .finally(() => setCarregando(false));
   }, [usuarioId]);
 
+  // Configuração comum para renderização do Markdown nas células
+  const markdownComponents = {
+    p: ({children}: any) => <p className="mb-1 last:mb-0">{children}</p>,
+    ul: ({children}: any) => <ul className="list-disc pl-4 mb-1 space-y-0.5">{children}</ul>,
+    ol: ({children}: any) => <ol className="list-decimal pl-4 mb-1 space-y-0.5">{children}</ol>,
+    li: ({children}: any) => <li className="marker:text-gray-400">{children}</li>,
+    a: ({href, children}: any) => (
+      <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+        {children}
+      </a>
+    )
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-4 md:p-6">
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Interações - {usuarioId}</CardTitle>
@@ -47,9 +55,9 @@ function HistoryListContent({ usuarioId }: { usuarioId: string }) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[180px]">Data/Hora</TableHead>
-                  <TableHead>Sua Mensagem</TableHead>
-                  <TableHead>Resposta do Bot</TableHead>
+                  <TableHead className="w-[140px]">Data/Hora</TableHead>
+                  <TableHead className="w-[30%]">Sua Mensagem</TableHead>
+                  <TableHead>Resposta do Consultor</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -69,8 +77,9 @@ function HistoryListContent({ usuarioId }: { usuarioId: string }) {
                   </TableRow>
                 ) : (
                   historico.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium text-xs text-gray-500">
+                    <TableRow key={item.id} className="align-top">
+                      {/* Coluna Data */}
+                      <TableCell className="font-mono text-xs text-gray-500 py-4 align-top">
                         {new Date(item.criado_em).toLocaleString([], {
                           day: '2-digit',
                           month: '2-digit',
@@ -78,11 +87,29 @@ function HistoryListContent({ usuarioId }: { usuarioId: string }) {
                           minute: '2-digit'
                         })}
                       </TableCell>
-                      <TableCell className="text-blue-700 font-medium">
-                        {item.mensagem_usuario}
+                      
+                      {/* Coluna Usuário */}
+                      <TableCell className="py-4 align-top">
+                         <div className="prose prose-sm max-w-none prose-p:text-blue-700 prose-strong:text-blue-900 leading-snug">
+                            <ReactMarkdown 
+                              remarkPlugins={[remarkGfm]}
+                              components={markdownComponents}
+                            >
+                              {item.mensagem_usuario}
+                            </ReactMarkdown>
+                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-600">
-                        {item.resposta_bot}
+
+                      {/* Coluna Bot */}
+                      <TableCell className="py-4 align-top">
+                        <div className="prose prose-sm max-w-none prose-slate prose-p:text-gray-600 prose-headings:text-gray-700 leading-snug">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={markdownComponents}
+                          >
+                            {item.resposta_bot}
+                          </ReactMarkdown>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
